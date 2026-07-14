@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SkyHustle // Torn Travel Optimizer</title>
+    <!-- Tailwind CSS for sleek styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Inter:wght@300;400;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f0f12;
+        }
+        .torn-mono {
+            font-family: 'Share Tech Mono', monospace;
+        }
+        .torn-border {
+            border-color: #3f3f46;
+        }
+        .glow-red {
+            text-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
+        }
+    </style>
+</head>
+<body class="text-gray-200 min-h-screen flex flex-col justify-between">
+
+    <!-- Header -->
+    <header class="border-b border-red-900/40 bg-[#141419] p-4 shadow-lg sticky top-0 z-50">
+        <div class="max-w-md mx-auto flex justify-between items-center">
+            <h1 class="text-xl font-bold tracking-wider text-red-500 torn-mono glow-red">
+                SKYHUSTLE <span class="text-gray-500 text-xs">// V1.0</span>
+            </h1>
+            <div id="api-status" class="text-xs bg-zinc-800 px-2 py-1 rounded border border-zinc-700 text-zinc-400">
+                Checking API Key...
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-grow p-4 max-w-md mx-auto w-full space-y-4">
+        
+        <!-- Controls Panel -->
+        <section class="bg-[#141419] border border-zinc-800 rounded-lg p-4 shadow-md">
+            <h2 class="text-sm font-semibold text-zinc-400 uppercase tracking-wider mb-3 torn-mono">Flight Parameters</h2>
+            
+            <div class="space-y-3">
+                <!-- Capacity Input -->
+                <div>
+                    <label class="block text-xs text-zinc-500 mb-1 uppercase font-bold">Item Capacity (Luggage)</label>
+                    <input type="number" id="capacity" value="29" min="1" 
+                           class="w-full bg-zinc-900 border border-zinc-700 rounded p-2 text-sm text-white focus:outline-none focus:border-red-500 transition">
+                </div>
+
+                <!-- Time Filter Logic -->
+                <div>
+                    <label class="block text-xs text-zinc-500 mb-1 uppercase font-bold">Available Travel Window</label>
+                    <select id="time-window" class="w-full bg-zinc-900 border border-zinc-700 rounded p-2 text-sm text-white focus:outline-none focus:border-red-500 transition">
+                        <option value="any">Anytime (Maximize Profit Per Minute)</option>
+                        <option value="short">Day Quickies (Under 45 mins round trip)</option>
+                        <option value="medium">Mid-Range (1 - 3 hours round trip)</option>
+                        <option value="long">Overnight / Long Haul (3+ hours round trip)</option>
+                    </select>
+                </div>
+            </div>
+            
+            <button id="refresh-btn" class="w-full mt-4 bg-red-700 hover:bg-red-600 active:bg-red-800 text-white font-bold py-2 px-4 rounded transition torn-mono text-sm tracking-wider shadow-lg">
+                RUN OPTIMIZER
+            </button>
+        </section>
+
+        <!-- Results Panel -->
+        <section>
+            <h2 class="text-sm font-semibold text-zinc-400 uppercase tracking-wider mb-2 torn-mono px-1">Optimized Runs</h2>
+            <div id="results-list" class="space-y-3">
+                <!-- Dynamic Content Loading -->
+                <div class="text-center py-8 text-zinc-600 text-sm">
+                    Enter your API key in the URL (e.g., ?key=YOUR_KEY) to load data.
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="text-center p-4 text-xs text-zinc-600 border-t border-zinc-900 bg-[#0b0b0d]">
+        Data sourced via Torn API. Fly safe, hustle hard.
+    </footer>
+
+    <!-- Application Logic -->
+    <script>
+        // Constants for Destinations (Base one-way flight times in minutes)
+        const DESTINATIONS = [
+            { name: 'Mexico', time: 20, item: 'Jaguar Plushie / Dahlia', cost: 1000 },
+            { name: 'Cayman Islands', time: 25, item: 'Stingray Plushie / Banana Orchid', cost: 1000 },
+            { name: 'Canada', time: 30, item: 'Wolverine Plushie / Crocus', cost: 1000 },
+            { name: 'Hawaii', time: 94, item: 'Orchid', cost: 1000 },
+            { name: 'United Kingdom', time: 111, item: 'Red Fox Plushie / Heather', cost: 1000 },
+            { name: 'Argentina', time: 117, item: 'Monkey Plushie / Ceibo', cost: 1000 },
+            { name: 'Switzerland', time: 123, item: 'Edelweiss', cost: 1000 },
+            { name: 'Japan', time: 159, item: 'Nessie Plushie / Cherry Blossom', cost: 1000 },
+            { name: 'China', time: 169, item: 'Panda Plushie / Peony', cost: 1000 },
+            { name: 'UAE', time: 178, item: 'Camel Plushie / Tribulus Omanense', cost: 1000 },
+            { name: 'South Africa', time: 208, item: 'Lion Plushie / African Violet', cost: 1000 }
+        ];
+
+        // Retrieve API key from URL parameters (?key=XXXX)
+        const urlParams = new URLSearchParams(window.location.search);
+        const apiKey = urlParams.get('key');
+        
+        const apiStatusEl = document.getElementById('api-status');
+        const resultsListEl = document.getElementById('results-list');
+        const refreshBtn = document.getElementById('refresh-btn');
+
+        if (apiKey) {
+            apiStatusEl.textContent = "API Key Detected";
+            apiStatusEl.classList.remove('text-zinc-400');
+            apiStatusEl.classList.add('text-green-500', 'border-green-900/50');
+        } else {
+            apiStatusEl.textContent = "Missing ?key= in URL";
+            apiStatusEl.classList.remove('text-zinc-400');
+            apiStatusEl.classList.add('text-amber-500', 'border-amber-900/50');
+        }
+
+        async function fetchTornMarketPrices() {
+            if (!apiKey) {
+                resultsListEl.innerHTML = `<div class="text-center py-4 text-amber-500 text-sm border border-amber-900/30 rounded bg-amber-950/20">Please add your API key to the URL parameter: <code>?key=YOUR_KEY</code></div>`;
+                return;
+            }
+
+            resultsListEl.innerHTML = `<div class="text-center py-8 text-zinc-400 text-sm">Hacking Torn market feeds...</div>`;
+
+            try {
+                // Fetching standard items market values from Torn API
+                const response = await fetch(`https://api.torn.com/torn/?selections=items&key=${apiKey}`);
+                const data = await response.json();
+
+                if (data.error) {
+                    throw new Error(data.error.error || "API Error");
+                }
+
+                calculateBestRoutes(data.items);
+            } catch (err) {
+                resultsListEl.innerHTML = `<div class="text-center py-4 text-red-500 text-sm border border-red-900/30 rounded bg-red-950/20">Error: ${err.message}</div>`;
+            }
+        }
+
+        function calculateBestRoutes(itemsData) {
+            const capacity = parseInt(document.getElementById('capacity').value) || 29;
+            const timeWindow = document.getElementById('time-window').value;
+            
+            // Helper function to find item value by name
+            // In a production build, you would map exact Item IDs for 100% accuracy.
+            function getItemMarketValue(itemName) {
+                // Fallback estimates if mapping isn't active
+                let sampleValue = 45000; 
+                for (let id in itemsData) {
+                    if (itemName.toLowerCase().includes(itemsData[id].name.toLowerCase())) {
+                        return itemsData[id].market_value;
+                    }
+                }
+                return sampleValue;
+            }
+
+            let processedDestinations = DESTINATIONS.map(dest => {
+                // Splitting items if destination has multiple options
+                const itemOptions = dest.item.split(' / ');
+                let bestItemPrice = 0;
+                let chosenItem = itemOptions[0];
+
+                itemOptions.forEach(itm => {
+                    let price = getItemMarketValue(itm);
+                    if (price > bestItemPrice) {
+                        bestItemPrice = price;
+                        chosenItem = itm;
+                    }
+                });
+
+                const totalRevenue = bestItemPrice * capacity;
+                const totalCost = dest.cost * capacity;
+                const totalProfit = totalRevenue - totalCost;
+                const totalFlightTime = dest.time * 2; // Round trip
+                const profitPerMinute = totalProfit / totalFlightTime;
+
+                return {
+                    ...dest,
+                    chosenItem: chosenItem,
+                    marketValue: bestItemPrice,
+                    totalProfit: totalProfit,
+                    totalFlightTime: totalFlightTime,
+                    profitPerMinute: profitPerMinute
+                };
+            });
+
+            // Filter out paths based on the user's selected schedule window
+            if (timeWindow === 'short') {
+                processedDestinations = processedDestinations.filter(d => d.totalFlightTime <= 60);
+            } else if (timeWindow === 'medium') {
+                processedDestinations = processedDestinations.filter(d => d.totalFlightTime > 60 && d.totalFlightTime <= 240);
+            } else if (timeWindow === 'long') {
+                processedDestinations = processedDestinations.filter(d => d.totalFlightTime > 240);
+            }
+
+            // Sort by profit efficiency (Profit per minute)
+            processedDestinations.sort((a, b) => b.profitPerMinute - a.profitPerMinute);
+
+            renderResults(processedDestinations);
+        }
+
+        function renderResults(routes) {
+            resultsListEl.innerHTML = '';
+
+            if (routes.length === 0) {
+                resultsListEl.innerHTML = `<div class="text-center py-8 text-zinc-500 text-sm">No destinations fit this travel window.</div>`;
+                return;
+            }
+
+            routes.forEach((route, index) => {
+                const card = document.createElement('div');
+                card.className = `border ${index === 0 ? 'border-red-500/40 bg-gradient-to-r from-red-950/20 to-zinc-900/40' : 'border-zinc-800 bg-zinc-900/40'} rounded-lg p-3 flex justify-between items-center shadow-sm`;
+                
+                card.innerHTML = `
+                    <div>
+                        <div class="flex items-center space-x-2">
+                            ${index === 0 ? '<span class="text-[10px] bg-red-600 text-white px-1 rounded font-bold torn-mono">BEST EFFICIENCY</span>' : ''}
+                            <h3 class="font-bold text-sm tracking-wide text-white">${route.name}</h3>
+                        </div>
+                        <p class="text-xs text-zinc-400 mt-1">Target: <span class="text-zinc-300 font-medium">${route.chosenItem}</span></p>
+                        <p class="text-[11px] text-zinc-500 mt-0.5">Round Trip: ${route.totalFlightTime} mins</p>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-sm font-bold torn-mono text-green-400">$${Math.floor(route.totalProfit).toLocaleString()}</span>
+                        <p class="text-[10px] text-zinc-400 torn-mono">$${Math.floor(route.profitPerMinute).toLocaleString()}/min</p>
+                    </div>
+                `;
+                resultsListEl.appendChild(card);
+            });
+        }
+
+        // Event Listeners
+        refreshBtn.addEventListener('click', fetchTornMarketPrices);
+        document.getElementById('time-window').addEventListener('change', () => {
+            if(apiKey) refreshBtn.click();
+        });
+
+        // Auto-run if key exists
+        if (apiKey) {
+            fetchTornMarketPrices();
+        }
+    </script>
+</body>
+</html>
