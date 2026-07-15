@@ -37,31 +37,42 @@
     <main class="flex-grow p-4 max-w-md mx-auto w-full space-y-4">
         
         <!-- Controls Panel -->
-        <section class="bg-[#121216] border border-zinc-800 rounded-lg p-4 shadow-md">
-            <h2 class="text-sm font-semibold text-zinc-400 uppercase tracking-wider mb-3 torn-mono">Flight Parameters</h2>
+        <section class="bg-[#121216] border border-zinc-800 rounded-lg p-4 shadow-md space-y-3">
+            <h2 class="text-sm font-semibold text-zinc-400 uppercase tracking-wider mb-2 torn-mono">Flight Parameters</h2>
             
-            <div class="space-y-3">
-                <!-- Capacity Input -->
-                <div>
-                    <label class="block text-xs text-zinc-500 mb-1 uppercase font-bold">Item Capacity (Luggage)</label>
-                    <input type="number" id="capacity" value="29" min="1" 
-                           class="w-full bg-zinc-950 border border-zinc-800 rounded p-2 text-sm text-white focus:outline-none focus:border-red-500 transition">
-                </div>
+            <!-- Capacity Input -->
+            <div>
+                <label class="block text-xs text-zinc-500 mb-1 uppercase font-bold">Item Capacity (Luggage)</label>
+                <input type="number" id="capacity" value="29" min="1" 
+                       class="w-full bg-zinc-950 border border-zinc-800 rounded p-2 text-sm text-white focus:outline-none focus:border-red-500 transition">
+            </div>
 
-                <!-- Time Filter Logic -->
-                <div>
-                    <label class="block text-xs text-zinc-500 mb-1 uppercase font-bold">Available Travel Window</label>
-                    <select id="time-window" class="w-full bg-zinc-950 border border-zinc-800 rounded p-2 text-sm text-white focus:outline-none focus:border-red-500 transition">
-                        <option value="any">Anytime (Maximize Profit Per Minute)</option>
-                        <option value="short">Day Quickies (Under 1 Hour Round Trip)</option>
-                        <option value="medium">Mid-Range (1 to 4 Hours Round Trip)</option>
-                        <option value="long">Overnight / Long Haul (4+ Hours Round Trip)</option>
-                    </select>
-                    <span id="auto-time-notice" class="text-[10px] text-zinc-500 mt-1 block"></span>
+            <!-- Travel Method Toggle -->
+            <div>
+                <label class="block text-xs text-zinc-500 mb-1 uppercase font-bold">Travel Method</label>
+                <div class="grid grid-cols-2 gap-2">
+                    <button id="method-standard" class="py-2 px-3 text-xs font-bold rounded border transition uppercase torn-mono border-zinc-800 bg-zinc-950 text-zinc-400" onclick="setTravelMethod('standard')">
+                        Standard Ticket
+                    </button>
+                    <button id="method-airstrip" class="py-2 px-3 text-xs font-bold rounded border transition uppercase torn-mono border-red-900/40 bg-red-950/20 text-red-400" onclick="setTravelMethod('airstrip')">
+                        Airstrip (Free & 30% Fast)
+                    </button>
                 </div>
             </div>
+
+            <!-- Time Filter Logic -->
+            <div>
+                <label class="block text-xs text-zinc-500 mb-1 uppercase font-bold">Available Travel Window</label>
+                <select id="time-window" class="w-full bg-zinc-950 border border-zinc-800 rounded p-2 text-sm text-white focus:outline-none focus:border-red-500 transition">
+                    <option value="any">Anytime (Maximize Profit Per Minute)</option>
+                    <option value="short">Day Quickies (Under 1 Hour Round Trip)</option>
+                    <option value="medium">Mid-Range (1 to 4 Hours Round Trip)</option>
+                    <option value="long">Overnight / Long Haul (4+ Hours Round Trip)</option>
+                </select>
+                <span id="auto-time-notice" class="text-[10px] text-zinc-500 mt-1 block"></span>
+            </div>
             
-            <button id="refresh-btn" class="w-full mt-4 bg-red-700 hover:bg-red-600 active:bg-red-800 text-white font-bold py-2 px-4 rounded transition torn-mono text-sm tracking-wider shadow-lg">
+            <button id="refresh-btn" class="w-full mt-2 bg-red-700 hover:bg-red-600 active:bg-red-800 text-white font-bold py-2 px-4 rounded transition torn-mono text-sm tracking-wider shadow-lg">
                 RUN OPTIMIZER
             </button>
         </section>
@@ -82,23 +93,22 @@
         Data sourced via Torn API. Fly safe, hustle hard.
     </footer>
 
-    <!-- Application Logic -->
     <script>
-        // Exact buy costs, flight costs, and flight times for all foreign flowers and plushies
+        // Verified database of travel costs, base times, and foreign buy prices
         const DESTINATIONS = [
             { 
                 name: 'Mexico', 
-                flightCost: 9000, 
-                time: 20, 
+                ticketCost: 6500, 
+                baseTime: 20, 
                 items: [
                     { name: 'Jaguar Plushie', buyCost: 10000 },
-                    { name: 'Dahlia', buyCost: 2000 }
+                    { name: 'Dahlia', buyCost: 300 }
                 ]
             },
             { 
                 name: 'Cayman Islands', 
-                flightCost: 13500, 
-                time: 25, 
+                ticketCost: 10000, 
+                baseTime: 25, 
                 items: [
                     { name: 'Stingray Plushie', buyCost: 400 },
                     { name: 'Banana Orchid', buyCost: 4000 }
@@ -106,61 +116,61 @@
             },
             { 
                 name: 'Canada', 
-                flightCost: 11250, 
-                time: 30, 
+                ticketCost: 9000, 
+                baseTime: 29, 
                 items: [
-                    { name: 'Wolverine Plushie', buyCost: 20 },
+                    { name: 'Wolverine Plushie', buyCost: 30 },
                     { name: 'Crocus', buyCost: 600 }
                 ]
             },
             { 
                 name: 'Hawaii', 
-                flightCost: 27000, 
-                time: 94, 
+                ticketCost: 11000, 
+                baseTime: 94, 
                 items: [
                     { name: 'Orchid', buyCost: 700 }
                 ]
             },
             { 
                 name: 'United Kingdom', 
-                flightCost: 38250, 
-                time: 111, 
+                ticketCost: 18000, 
+                baseTime: 111, 
                 items: [
                     { name: 'Red Fox Plushie', buyCost: 1000 },
+                    { name: 'Nessie Plushie', buyCost: 200 },
                     { name: 'Heather', buyCost: 5000 }
                 ]
             },
             { 
                 name: 'Argentina', 
-                flightCost: 40500, 
-                time: 117, 
+                ticketCost: 21000, 
+                baseTime: 117, 
                 items: [
                     { name: 'Monkey Plushie', buyCost: 400 },
-                    { name: 'Ceibo', buyCost: 2000 }
+                    { name: 'Ceibo Flower', buyCost: 500 }
                 ]
             },
             { 
                 name: 'Switzerland', 
-                flightCost: 45000, 
-                time: 123, 
+                ticketCost: 27000, 
+                baseTime: 123, 
                 items: [
-                    { name: 'Sheep Plushie', buyCost: 25 },
-                    { name: 'Edelweiss', buyCost: 4000 }
+                    { name: 'Chamois Plushie', buyCost: 400 },
+                    { name: 'Edelweiss', buyCost: 900 }
                 ]
             },
             { 
                 name: 'Japan', 
-                flightCost: 56250, 
-                time: 159, 
+                ticketCost: 32000, 
+                baseTime: 158, 
                 items: [
-                    { name: 'Nessie Plushie', buyCost: 200 },
-                    { name: 'Cherry Blossom', buyCost: 5000 }
+                    { name: 'Cherry Blossom', buyCost: 500 }
                 ]
             },
             { 
                 name: 'China', 
-                flightCost: 67500, 
-                time: 169, 
+                ticketCost: 35000, 
+                baseTime: 169, 
                 items: [
                     { name: 'Panda Plushie', buyCost: 400 },
                     { name: 'Peony', buyCost: 5000 }
@@ -168,8 +178,8 @@
             },
             { 
                 name: 'UAE', 
-                flightCost: 81000, 
-                time: 178, 
+                ticketCost: 32000, 
+                baseTime: 190, 
                 items: [
                     { name: 'Camel Plushie', buyCost: 14000 },
                     { name: 'Tribulus Omanense', buyCost: 6000 }
@@ -177,8 +187,8 @@
             },
             { 
                 name: 'South Africa', 
-                flightCost: 90000, 
-                time: 208, 
+                ticketCost: 40000, 
+                baseTime: 208, 
                 items: [
                     { name: 'Lion Plushie', buyCost: 400 },
                     { name: 'African Violet', buyCost: 2000 }
@@ -186,7 +196,6 @@
             }
         ];
 
-        // Retrieve API key from URL params
         const urlParams = new URLSearchParams(window.location.search);
         const apiKey = urlParams.get('key');
         
@@ -196,30 +205,43 @@
         const timeWindowEl = document.getElementById('time-window');
         const autoTimeNoticeEl = document.getElementById('auto-time-notice');
 
-        // Dynamic, contextual time logic based on current hour
+        let travelMethod = 'airstrip'; // Default to Airstrip as it's the most common active playstyle
+
+        function setTravelMethod(method) {
+            travelMethod = method;
+            const standardBtn = document.getElementById('method-standard');
+            const airstripBtn = document.getElementById('method-airstrip');
+
+            if (method === 'standard') {
+                standardBtn.className = "py-2 px-3 text-xs font-bold rounded border transition uppercase torn-mono border-red-900/40 bg-red-950/20 text-red-400";
+                airstripBtn.className = "py-2 px-3 text-xs font-bold rounded border transition uppercase torn-mono border-zinc-800 bg-zinc-950 text-zinc-400";
+            } else {
+                standardBtn.className = "py-2 px-3 text-xs font-bold rounded border transition uppercase torn-mono border-zinc-800 bg-zinc-950 text-zinc-400";
+                airstripBtn.className = "py-2 px-3 text-xs font-bold rounded border transition uppercase torn-mono border-red-900/40 bg-red-950/20 text-red-400";
+            }
+
+            if (apiKey) fetchTornMarketPrices();
+        }
+
         function setTimeDefaultBasedOnTimeOfDay() {
             const currentHour = new Date().getHours(); 
             
             if (currentHour >= 21 || currentHour < 4) {
-                // After 9pm and before 4am -> Set to overnight
                 timeWindowEl.value = 'long';
-                autoTimeNoticeEl.textContent = "⚡ Auto-selected: Long Haul (It's late night. Time to sleep while flying!)";
+                autoTimeNoticeEl.textContent = "⚡ Auto-selected: Long Haul (It's late night. Queue an overnight flight!)";
             } else if (currentHour >= 8 && currentHour < 17) {
-                // Daytime working hours
                 timeWindowEl.value = 'medium';
-                autoTimeNoticeEl.textContent = "⚡ Auto-selected: Mid-Range (Fits comfortably into daytime gaps)";
+                autoTimeNoticeEl.textContent = "⚡ Auto-selected: Mid-Range (Daytime work/school window)";
             } else if (currentHour >= 17 && currentHour < 21) {
-                // Evening active hours
                 timeWindowEl.value = 'any';
                 autoTimeNoticeEl.textContent = "⚡ Auto-selected: Anytime (Flexible evening hours, looking for raw optimization)";
             } else {
-                // Early morning
                 timeWindowEl.value = 'short';
-                autoTimeNoticeEl.textContent = "⚡ Auto-selected: Day Quickies (Morning sessions, quick hops)";
+                autoTimeNoticeEl.textContent = "⚡ Auto-selected: Day Quickies (Morning quick runs)";
             }
         }
 
-        // Initialize state
+        // Initialize Time Defaults
         setTimeDefaultBasedOnTimeOfDay();
 
         if (apiKey) {
@@ -238,7 +260,7 @@
                 return;
             }
 
-            resultsListEl.innerHTML = `<div class="text-center py-8 text-zinc-400 text-sm">Hacking Torn market feeds...</div>`;
+            resultsListEl.innerHTML = `<div class="text-center py-8 text-zinc-400 text-sm">Infiltrating Torn City market...</div>`;
 
             try {
                 const response = await fetch(`https://api.torn.com/torn/?selections=items&key=${apiKey}`);
@@ -259,31 +281,39 @@
             const timeWindow = timeWindowEl.value;
             
             function getItemMarketValue(itemName) {
-                let sampleValue = 40000; // Realistic placeholder logic if API maps weirdly
                 for (let id in itemsData) {
                     if (itemsData[id].name.toLowerCase() === itemName.toLowerCase()) {
                         return itemsData[id].market_value;
                     }
                 }
-                return sampleValue;
+                return 40000; // Realistic backup
             }
 
             let processedDestinations = [];
 
             DESTINATIONS.forEach(dest => {
+                // Apply flight modifier logic
+                let actualFlightTime = dest.baseTime;
+                let flightCost = dest.ticketCost;
+
+                if (travelMethod === 'airstrip') {
+                    actualFlightTime = Math.round(dest.baseTime * 0.7); // 30% speed reduction
+                    flightCost = 0; // Flight costs are absolutely $0 with airstrip/private pilot
+                }
+
                 dest.items.forEach(item => {
                     const marketValue = getItemMarketValue(item.name);
                     const totalRevenue = marketValue * capacity;
                     
-                    // Deduct BOTH actual flight ticket cost AND the local buy cost of the items
-                    const totalCost = dest.flightCost + (item.buyCost * capacity);
+                    // Net Cost: Only pay ticket cost once + local item costs * capacity
+                    const totalCost = flightCost + (item.buyCost * capacity);
                     const totalProfit = totalRevenue - totalCost;
-                    const totalFlightTime = dest.time * 2; // Round trip in minutes
+                    const totalFlightTime = actualFlightTime * 2; // Round trip duration (no money cost on return)
                     const profitPerMinute = totalProfit / totalFlightTime;
 
                     processedDestinations.push({
                         country: dest.name,
-                        flightCost: dest.flightCost,
+                        flightCost: flightCost,
                         totalFlightTime: totalFlightTime,
                         itemName: item.name,
                         buyCost: item.buyCost,
@@ -294,7 +324,7 @@
                 });
             });
 
-            // Filtering out routes based on user's window
+            // Filtering based on active travel window
             if (timeWindow === 'short') {
                 processedDestinations = processedDestinations.filter(d => d.totalFlightTime <= 60);
             } else if (timeWindow === 'medium') {
@@ -303,7 +333,7 @@
                 processedDestinations = processedDestinations.filter(d => d.totalFlightTime > 240);
             }
 
-            // Sort by profit efficiency (Profit per minute)
+            // Sort by profit efficiency
             processedDestinations.sort((a, b) => b.profitPerMinute - a.profitPerMinute);
 
             renderResults(processedDestinations);
@@ -321,6 +351,11 @@
                 const card = document.createElement('div');
                 card.className = `border ${index === 0 ? 'border-red-500/40 bg-gradient-to-r from-red-950/20 to-zinc-900/40' : 'border-zinc-800 bg-zinc-900/40'} rounded-lg p-3 flex justify-between items-center shadow-sm`;
                 
+                // Hour and minute breakdown
+                const hrs = Math.floor(route.totalFlightTime / 60);
+                const mins = route.totalFlightTime % 60;
+                const timeString = hrs > 0 ? `${hrs}h ${mins}m` : `${mins}m`;
+
                 card.innerHTML = `
                     <div>
                         <div class="flex items-center space-x-2">
@@ -328,8 +363,8 @@
                             <h3 class="font-bold text-sm tracking-wide text-white">${route.country}</h3>
                         </div>
                         <p class="text-xs text-zinc-400 mt-1">Item: <span class="text-zinc-300 font-medium">${route.itemName}</span></p>
-                        <p class="text-[10px] text-zinc-500 mt-0.5">Ticket: $${route.flightCost.toLocaleString()} | Buy Cost: $${route.buyCost.toLocaleString()}/ea</p>
-                        <p class="text-[11px] text-zinc-400 mt-0.5">Round Trip Time: ${route.totalFlightTime} mins</p>
+                        <p class="text-[10px] text-zinc-500 mt-0.5">Ticket: ${route.flightCost > 0 ? '$' + route.flightCost.toLocaleString() : 'FREE (Airstrip)'} | Buy Cost: $${route.buyCost.toLocaleString()}/ea</p>
+                        <p class="text-[11px] text-zinc-400 mt-0.5">Round Trip Time: ${timeString}</p>
                     </div>
                     <div class="text-right">
                         <span class="text-sm font-bold torn-mono text-green-400">$${Math.floor(route.totalProfit).toLocaleString()}</span>
@@ -343,12 +378,11 @@
         // Event Listeners
         refreshBtn.addEventListener('click', fetchTornMarketPrices);
         timeWindowEl.addEventListener('change', () => {
-            // Keep the text dynamic even if manually swapped
-            autoTimeNoticeEl.textContent = "⚙️ Selection manually set.";
+            autoTimeNoticeEl.textContent = "⚙️ Selection manually updated.";
             if (apiKey) fetchTornMarketPrices();
         });
 
-        // Trigger run on load if key is configured
+        // Trigger on initial run if key is configured
         if (apiKey) {
             fetchTornMarketPrices();
         }
