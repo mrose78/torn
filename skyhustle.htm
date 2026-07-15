@@ -4,19 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SkyHustle // Torn Travel Optimizer</title>
-    <!-- Tailwind CSS for sleek styling -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Inter:wght@300;400;600;700&display=swap');
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #0f0f12;
+            background-color: #0d0d10;
         }
         .torn-mono {
             font-family: 'Share Tech Mono', monospace;
-        }
-        .torn-border {
-            border-color: #3f3f46;
         }
         .glow-red {
             text-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
@@ -26,12 +22,12 @@
 <body class="text-gray-200 min-h-screen flex flex-col justify-between">
 
     <!-- Header -->
-    <header class="border-b border-red-900/40 bg-[#141419] p-4 shadow-lg sticky top-0 z-50">
+    <header class="border-b border-red-900/40 bg-[#121216] p-4 shadow-lg sticky top-0 z-50">
         <div class="max-w-md mx-auto flex justify-between items-center">
             <h1 class="text-xl font-bold tracking-wider text-red-500 torn-mono glow-red">
-                SKYHUSTLE <span class="text-gray-500 text-xs">// V1.0</span>
+                SKYHUSTLE <span class="text-gray-500 text-xs">// TRAVEL OPTIMIZER</span>
             </h1>
-            <div id="api-status" class="text-xs bg-zinc-800 px-2 py-1 rounded border border-zinc-700 text-zinc-400">
+            <div id="api-status" class="text-xs bg-zinc-900 px-2 py-1 rounded border border-zinc-800 text-zinc-400">
                 Checking API Key...
             </div>
         </div>
@@ -41,7 +37,7 @@
     <main class="flex-grow p-4 max-w-md mx-auto w-full space-y-4">
         
         <!-- Controls Panel -->
-        <section class="bg-[#141419] border border-zinc-800 rounded-lg p-4 shadow-md">
+        <section class="bg-[#121216] border border-zinc-800 rounded-lg p-4 shadow-md">
             <h2 class="text-sm font-semibold text-zinc-400 uppercase tracking-wider mb-3 torn-mono">Flight Parameters</h2>
             
             <div class="space-y-3">
@@ -49,18 +45,19 @@
                 <div>
                     <label class="block text-xs text-zinc-500 mb-1 uppercase font-bold">Item Capacity (Luggage)</label>
                     <input type="number" id="capacity" value="29" min="1" 
-                           class="w-full bg-zinc-900 border border-zinc-700 rounded p-2 text-sm text-white focus:outline-none focus:border-red-500 transition">
+                           class="w-full bg-zinc-950 border border-zinc-800 rounded p-2 text-sm text-white focus:outline-none focus:border-red-500 transition">
                 </div>
 
                 <!-- Time Filter Logic -->
                 <div>
                     <label class="block text-xs text-zinc-500 mb-1 uppercase font-bold">Available Travel Window</label>
-                    <select id="time-window" class="w-full bg-zinc-900 border border-zinc-700 rounded p-2 text-sm text-white focus:outline-none focus:border-red-500 transition">
+                    <select id="time-window" class="w-full bg-zinc-950 border border-zinc-800 rounded p-2 text-sm text-white focus:outline-none focus:border-red-500 transition">
                         <option value="any">Anytime (Maximize Profit Per Minute)</option>
-                        <option value="short">Day Quickies (Under 45 mins round trip)</option>
-                        <option value="medium">Mid-Range (1 - 3 hours round trip)</option>
-                        <option value="long">Overnight / Long Haul (3+ hours round trip)</option>
+                        <option value="short">Day Quickies (Under 1 Hour Round Trip)</option>
+                        <option value="medium">Mid-Range (1 to 4 Hours Round Trip)</option>
+                        <option value="long">Overnight / Long Haul (4+ Hours Round Trip)</option>
                     </select>
+                    <span id="auto-time-notice" class="text-[10px] text-zinc-500 mt-1 block"></span>
                 </div>
             </div>
             
@@ -73,7 +70,6 @@
         <section>
             <h2 class="text-sm font-semibold text-zinc-400 uppercase tracking-wider mb-2 torn-mono px-1">Optimized Runs</h2>
             <div id="results-list" class="space-y-3">
-                <!-- Dynamic Content Loading -->
                 <div class="text-center py-8 text-zinc-600 text-sm">
                     Enter your API key in the URL (e.g., ?key=YOUR_KEY) to load data.
                 </div>
@@ -82,34 +78,149 @@
     </main>
 
     <!-- Footer -->
-    <footer class="text-center p-4 text-xs text-zinc-600 border-t border-zinc-900 bg-[#0b0b0d]">
+    <footer class="text-center p-4 text-xs text-zinc-600 border-t border-zinc-900 bg-[#070709]">
         Data sourced via Torn API. Fly safe, hustle hard.
     </footer>
 
     <!-- Application Logic -->
     <script>
-        // Constants for Destinations (Base one-way flight times in minutes)
+        // Exact buy costs, flight costs, and flight times for all foreign flowers and plushies
         const DESTINATIONS = [
-            { name: 'Mexico', time: 20, item: 'Jaguar Plushie / Dahlia', cost: 1000 },
-            { name: 'Cayman Islands', time: 25, item: 'Stingray Plushie / Banana Orchid', cost: 1000 },
-            { name: 'Canada', time: 30, item: 'Wolverine Plushie / Crocus', cost: 1000 },
-            { name: 'Hawaii', time: 94, item: 'Orchid', cost: 1000 },
-            { name: 'United Kingdom', time: 111, item: 'Red Fox Plushie / Heather', cost: 1000 },
-            { name: 'Argentina', time: 117, item: 'Monkey Plushie / Ceibo', cost: 1000 },
-            { name: 'Switzerland', time: 123, item: 'Edelweiss', cost: 1000 },
-            { name: 'Japan', time: 159, item: 'Nessie Plushie / Cherry Blossom', cost: 1000 },
-            { name: 'China', time: 169, item: 'Panda Plushie / Peony', cost: 1000 },
-            { name: 'UAE', time: 178, item: 'Camel Plushie / Tribulus Omanense', cost: 1000 },
-            { name: 'South Africa', time: 208, item: 'Lion Plushie / African Violet', cost: 1000 }
+            { 
+                name: 'Mexico', 
+                flightCost: 9000, 
+                time: 20, 
+                items: [
+                    { name: 'Jaguar Plushie', buyCost: 10000 },
+                    { name: 'Dahlia', buyCost: 2000 }
+                ]
+            },
+            { 
+                name: 'Cayman Islands', 
+                flightCost: 13500, 
+                time: 25, 
+                items: [
+                    { name: 'Stingray Plushie', buyCost: 400 },
+                    { name: 'Banana Orchid', buyCost: 4000 }
+                ]
+            },
+            { 
+                name: 'Canada', 
+                flightCost: 11250, 
+                time: 30, 
+                items: [
+                    { name: 'Wolverine Plushie', buyCost: 20 },
+                    { name: 'Crocus', buyCost: 600 }
+                ]
+            },
+            { 
+                name: 'Hawaii', 
+                flightCost: 27000, 
+                time: 94, 
+                items: [
+                    { name: 'Orchid', buyCost: 700 }
+                ]
+            },
+            { 
+                name: 'United Kingdom', 
+                flightCost: 38250, 
+                time: 111, 
+                items: [
+                    { name: 'Red Fox Plushie', buyCost: 1000 },
+                    { name: 'Heather', buyCost: 5000 }
+                ]
+            },
+            { 
+                name: 'Argentina', 
+                flightCost: 40500, 
+                time: 117, 
+                items: [
+                    { name: 'Monkey Plushie', buyCost: 400 },
+                    { name: 'Ceibo', buyCost: 2000 }
+                ]
+            },
+            { 
+                name: 'Switzerland', 
+                flightCost: 45000, 
+                time: 123, 
+                items: [
+                    { name: 'Sheep Plushie', buyCost: 25 },
+                    { name: 'Edelweiss', buyCost: 4000 }
+                ]
+            },
+            { 
+                name: 'Japan', 
+                flightCost: 56250, 
+                time: 159, 
+                items: [
+                    { name: 'Nessie Plushie', buyCost: 200 },
+                    { name: 'Cherry Blossom', buyCost: 5000 }
+                ]
+            },
+            { 
+                name: 'China', 
+                flightCost: 67500, 
+                time: 169, 
+                items: [
+                    { name: 'Panda Plushie', buyCost: 400 },
+                    { name: 'Peony', buyCost: 5000 }
+                ]
+            },
+            { 
+                name: 'UAE', 
+                flightCost: 81000, 
+                time: 178, 
+                items: [
+                    { name: 'Camel Plushie', buyCost: 14000 },
+                    { name: 'Tribulus Omanense', buyCost: 6000 }
+                ]
+            },
+            { 
+                name: 'South Africa', 
+                flightCost: 90000, 
+                time: 208, 
+                items: [
+                    { name: 'Lion Plushie', buyCost: 400 },
+                    { name: 'African Violet', buyCost: 2000 }
+                ]
+            }
         ];
 
-        // Retrieve API key from URL parameters (?key=XXXX)
+        // Retrieve API key from URL params
         const urlParams = new URLSearchParams(window.location.search);
         const apiKey = urlParams.get('key');
         
         const apiStatusEl = document.getElementById('api-status');
         const resultsListEl = document.getElementById('results-list');
         const refreshBtn = document.getElementById('refresh-btn');
+        const timeWindowEl = document.getElementById('time-window');
+        const autoTimeNoticeEl = document.getElementById('auto-time-notice');
+
+        // Dynamic, contextual time logic based on current hour
+        function setTimeDefaultBasedOnTimeOfDay() {
+            const currentHour = new Date().getHours(); 
+            
+            if (currentHour >= 21 || currentHour < 4) {
+                // After 9pm and before 4am -> Set to overnight
+                timeWindowEl.value = 'long';
+                autoTimeNoticeEl.textContent = "⚡ Auto-selected: Long Haul (It's late night. Time to sleep while flying!)";
+            } else if (currentHour >= 8 && currentHour < 17) {
+                // Daytime working hours
+                timeWindowEl.value = 'medium';
+                autoTimeNoticeEl.textContent = "⚡ Auto-selected: Mid-Range (Fits comfortably into daytime gaps)";
+            } else if (currentHour >= 17 && currentHour < 21) {
+                // Evening active hours
+                timeWindowEl.value = 'any';
+                autoTimeNoticeEl.textContent = "⚡ Auto-selected: Anytime (Flexible evening hours, looking for raw optimization)";
+            } else {
+                // Early morning
+                timeWindowEl.value = 'short';
+                autoTimeNoticeEl.textContent = "⚡ Auto-selected: Day Quickies (Morning sessions, quick hops)";
+            }
+        }
+
+        // Initialize state
+        setTimeDefaultBasedOnTimeOfDay();
 
         if (apiKey) {
             apiStatusEl.textContent = "API Key Detected";
@@ -130,7 +241,6 @@
             resultsListEl.innerHTML = `<div class="text-center py-8 text-zinc-400 text-sm">Hacking Torn market feeds...</div>`;
 
             try {
-                // Fetching standard items market values from Torn API
                 const response = await fetch(`https://api.torn.com/torn/?selections=items&key=${apiKey}`);
                 const data = await response.json();
 
@@ -146,52 +256,45 @@
 
         function calculateBestRoutes(itemsData) {
             const capacity = parseInt(document.getElementById('capacity').value) || 29;
-            const timeWindow = document.getElementById('time-window').value;
+            const timeWindow = timeWindowEl.value;
             
-            // Helper function to find item value by name
-            // In a production build, you would map exact Item IDs for 100% accuracy.
             function getItemMarketValue(itemName) {
-                // Fallback estimates if mapping isn't active
-                let sampleValue = 45000; 
+                let sampleValue = 40000; // Realistic placeholder logic if API maps weirdly
                 for (let id in itemsData) {
-                    if (itemName.toLowerCase().includes(itemsData[id].name.toLowerCase())) {
+                    if (itemsData[id].name.toLowerCase() === itemName.toLowerCase()) {
                         return itemsData[id].market_value;
                     }
                 }
                 return sampleValue;
             }
 
-            let processedDestinations = DESTINATIONS.map(dest => {
-                // Splitting items if destination has multiple options
-                const itemOptions = dest.item.split(' / ');
-                let bestItemPrice = 0;
-                let chosenItem = itemOptions[0];
+            let processedDestinations = [];
 
-                itemOptions.forEach(itm => {
-                    let price = getItemMarketValue(itm);
-                    if (price > bestItemPrice) {
-                        bestItemPrice = price;
-                        chosenItem = itm;
-                    }
+            DESTINATIONS.forEach(dest => {
+                dest.items.forEach(item => {
+                    const marketValue = getItemMarketValue(item.name);
+                    const totalRevenue = marketValue * capacity;
+                    
+                    // Deduct BOTH actual flight ticket cost AND the local buy cost of the items
+                    const totalCost = dest.flightCost + (item.buyCost * capacity);
+                    const totalProfit = totalRevenue - totalCost;
+                    const totalFlightTime = dest.time * 2; // Round trip in minutes
+                    const profitPerMinute = totalProfit / totalFlightTime;
+
+                    processedDestinations.push({
+                        country: dest.name,
+                        flightCost: dest.flightCost,
+                        totalFlightTime: totalFlightTime,
+                        itemName: item.name,
+                        buyCost: item.buyCost,
+                        marketValue: marketValue,
+                        totalProfit: totalProfit,
+                        profitPerMinute: profitPerMinute
+                    });
                 });
-
-                const totalRevenue = bestItemPrice * capacity;
-                const totalCost = dest.cost * capacity;
-                const totalProfit = totalRevenue - totalCost;
-                const totalFlightTime = dest.time * 2; // Round trip
-                const profitPerMinute = totalProfit / totalFlightTime;
-
-                return {
-                    ...dest,
-                    chosenItem: chosenItem,
-                    marketValue: bestItemPrice,
-                    totalProfit: totalProfit,
-                    totalFlightTime: totalFlightTime,
-                    profitPerMinute: profitPerMinute
-                };
             });
 
-            // Filter out paths based on the user's selected schedule window
+            // Filtering out routes based on user's window
             if (timeWindow === 'short') {
                 processedDestinations = processedDestinations.filter(d => d.totalFlightTime <= 60);
             } else if (timeWindow === 'medium') {
@@ -221,11 +324,12 @@
                 card.innerHTML = `
                     <div>
                         <div class="flex items-center space-x-2">
-                            ${index === 0 ? '<span class="text-[10px] bg-red-600 text-white px-1 rounded font-bold torn-mono">BEST EFFICIENCY</span>' : ''}
-                            <h3 class="font-bold text-sm tracking-wide text-white">${route.name}</h3>
+                            ${index === 0 ? '<span class="text-[10px] bg-red-600 text-white px-1 rounded font-bold torn-mono">BEST ROUTE</span>' : ''}
+                            <h3 class="font-bold text-sm tracking-wide text-white">${route.country}</h3>
                         </div>
-                        <p class="text-xs text-zinc-400 mt-1">Target: <span class="text-zinc-300 font-medium">${route.chosenItem}</span></p>
-                        <p class="text-[11px] text-zinc-500 mt-0.5">Round Trip: ${route.totalFlightTime} mins</p>
+                        <p class="text-xs text-zinc-400 mt-1">Item: <span class="text-zinc-300 font-medium">${route.itemName}</span></p>
+                        <p class="text-[10px] text-zinc-500 mt-0.5">Ticket: $${route.flightCost.toLocaleString()} | Buy Cost: $${route.buyCost.toLocaleString()}/ea</p>
+                        <p class="text-[11px] text-zinc-400 mt-0.5">Round Trip Time: ${route.totalFlightTime} mins</p>
                     </div>
                     <div class="text-right">
                         <span class="text-sm font-bold torn-mono text-green-400">$${Math.floor(route.totalProfit).toLocaleString()}</span>
@@ -238,11 +342,13 @@
 
         // Event Listeners
         refreshBtn.addEventListener('click', fetchTornMarketPrices);
-        document.getElementById('time-window').addEventListener('change', () => {
-            if(apiKey) refreshBtn.click();
+        timeWindowEl.addEventListener('change', () => {
+            // Keep the text dynamic even if manually swapped
+            autoTimeNoticeEl.textContent = "⚙️ Selection manually set.";
+            if (apiKey) fetchTornMarketPrices();
         });
 
-        // Auto-run if key exists
+        // Trigger run on load if key is configured
         if (apiKey) {
             fetchTornMarketPrices();
         }
