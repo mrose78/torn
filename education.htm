@@ -15,7 +15,7 @@
           colors: {
             darkbg: '#111215',
             darkcard: '#1a1c23',
-            tornGreen: '#3b82f6', /* Blue tint used for custom highlights, or you can swap to emerald-500 */
+            tornGreen: '#3b82f6',
             tornAccent: '#e2ba43',
           }
         }
@@ -399,12 +399,8 @@
       statusText.innerText = "Syncing...";
 
       try {
-        // Calling the exact, authentic v2 Restful route
-        const response = await fetch(`https://api.torn.com/v2/user/education`, {
-          headers: {
-            "Authorization": `Bearer ${apiKeyInput}`
-          }
-        });
+        // We pass the key as a query parameter (?key=) to bypass CORS Preflight limitations in standard browsers
+        const response = await fetch(`https://api.torn.com/v2/user/education?key=${apiKeyInput}`);
 
         if (!response.ok) {
           throw new Error(`HTTP network failure: Status code ${response.status}`);
@@ -412,6 +408,7 @@
 
         const payload = await response.json();
 
+        // Check if Torn returned a standard API error payload
         if (payload.error) {
           throw new Error(payload.error.error || "Torn API returned an error response block.");
         }
