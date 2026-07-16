@@ -158,7 +158,7 @@
     </button>
   </nav>
 
-  <script>
+<script>
     // --- DATABASE: REAL TORN EDUCATION DATA ---
     const educationDatabase = {
       biology: {
@@ -244,15 +244,21 @@
       const activeDesc = document.getElementById('activeCourseDesc');
       const progBar = document.getElementById('activeProgressBar');
 
-      if (state.activeCourse && state.activeCourse.id) {
+      if (state.activeCourse && state.activeCourse.name) {
         activeText.innerText = state.activeCourse.name;
-        activeDesc.innerText = `Active Course in Department of ${state.activeCourse.department.replace('_', ' ').toUpperCase()}`;
+        
+        const deptDisplay = state.activeCourse.department 
+          ? state.activeCourse.department.replace('_', ' ').toUpperCase() 
+          : "ACADEMICS";
+        activeDesc.innerText = `Active Course in Department of ${deptDisplay}`;
+        
         const pct = ((state.activeCourse.totalDuration - state.activeCourse.timeLeft) / state.activeCourse.totalDuration) * 100;
         progBar.style.width = `${Math.max(0, Math.min(100, pct))}%`;
       } else {
         activeText.innerText = "No Active Enrollment";
         activeDesc.innerText = "No classes currently scheduled.";
         progBar.style.width = "0%";
+        document.getElementById('timeRemaining').innerText = "--:--:--";
       }
     }
 
@@ -389,7 +395,7 @@
       const apiKeyInput = document.getElementById('apiKeyInput').value.trim();
       
       if (apiKeyInput.length !== 16) {
-        alert("Please enter a valid 16-character Torn API key.");
+        alert("Please enter a will-formed 16-character Torn API key.");
         return;
       }
 
@@ -399,7 +405,6 @@
       statusText.innerText = "Syncing...";
 
       try {
-        // We pass the key as a query parameter (?key=) to bypass CORS Preflight limitations in standard browsers
         const response = await fetch(`https://api.torn.com/v2/user/education?key=${apiKeyInput}`);
 
         if (!response.ok) {
@@ -408,36 +413,45 @@
 
         const payload = await response.json();
 
-        // Check if Torn returned a standard API error payload
         if (payload.error) {
           throw new Error(payload.error.error || "Torn API returned an error response block.");
         }
 
-        // Successfully authenticated & received payload
         state.apiKey = apiKeyInput;
         state.isLive = true;
         
-        // Match the structural components returned from Torn v2
+        // Match completed courses safely
         if (payload.completed && Array.isArray(payload.completed)) {
           state.completedCourses = payload.completed.map(id => Number(id));
         }
         
-        if (payload.current) {
+        // Robust mapping for Torn API v2 'current' course object
+        if (payload.current && (payload.current.course_id || payload.current.name)) {
+          // Handle dynamic key names in API v2
+          const secondsRemaining = payload.current.seconds_remaining ?? payload.current.seconds_left ?? 0;
+          const totalSeconds = payload.current.total_seconds ?? (secondsRemaining + 1000); // safety fallback
+
           state.activeCourse = {
-            id: payload.current.course_id || 0,
-            name: payload.current.name || "Active Study Track",
-            department: payload.current.department || "General Studies",
-            timeLeft: payload.current.seconds_left || 0,
-            totalDuration: payload.current.total_seconds || 100000
+            id: Number(payload.current.course_id || 0),
+            name: payload.current.name || "Active Education Course",
+            department: payload.current.department || "Academics",
+            timeLeft: Number(secondsRemaining),
+            totalDuration: Number(totalSeconds)
           };
         } else {
           state.activeCourse = null;
         }
 
-        // Update top-bar state
+        // Dynamically locate the user's name across potential structural v2 variations
+        const playerName = payload.username || payload.name || "Torn Citizen";
+
+        // Update the DOM
         statusDot.className = "w-2 h-2 rounded-full bg-green-500";
         statusText.innerText = "Sync Connected";
-        document.getElementById('profileName').innerText = payload.username || "Torn Citizen";
+        
+        // Update welcome card text
+        document.getElementById('profileName').innerText = playerName;
+        document.querySelector('#tab-dashboard p').innerText = "Sync Connected. Real-time API data active.";
 
         renderApp();
       } catch (err) {
