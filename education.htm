@@ -58,7 +58,7 @@
         </div>
         <h2 class="text-sm uppercase tracking-widest text-gray-400 font-semibold">Player Education</h2>
         <div class="text-2xl font-black mt-1" id="profileName">Guest Student</div>
-        <p class="text-xs text-gray-400 mt-1">Simulated Progress. Link API key to show live data.</p>
+        <p class="text-xs text-gray-400 mt-1" id="profileSubtext">Simulated Progress. Link API key to show live data.</p>
       </div>
 
       <!-- Active Course Tracker -->
@@ -381,6 +381,7 @@
       renderApp();
     }
 
+    // --- NAVIGATION TAB SWITCHING ---
     function switchTab(tabId) {
       ['dashboard', 'courses', 'api'].forEach(t => {
         document.getElementById(`tab-${t}`).classList.add('hidden');
@@ -395,7 +396,7 @@
       const apiKeyInput = document.getElementById('apiKeyInput').value.trim();
       
       if (apiKeyInput.length !== 16) {
-        alert("Please enter a will-formed 16-character Torn API key.");
+        alert("Please enter a well-formed 16-character Torn API key.");
         return;
       }
 
@@ -405,7 +406,8 @@
       statusText.innerText = "Syncing...";
 
       try {
-        const response = await fetch(`https://api.torn.com/v2/user/education?key=${apiKeyInput}`);
+        // Query both 'profile' and 'education' selections in a single call to get player name + education status
+        const response = await fetch(`https://api.torn.com/v2/user/profile,education?key=${apiKeyInput}`);
 
         if (!response.ok) {
           throw new Error(`HTTP network failure: Status code ${response.status}`);
@@ -420,21 +422,24 @@
         state.apiKey = apiKeyInput;
         state.isLive = true;
         
-        // Match completed courses safely
-        if (payload.completed && Array.isArray(payload.completed)) {
-          state.completedCourses = payload.completed.map(id => Number(id));
+        // 1. Parse Completed Courses safely under V2 structure
+        if (payload.education && payload.education.completed) {
+          state.completedCourses = payload.education.completed.map(item => {
+            // Handle both flat IDs and object-based IDs
+            return typeof item === 'object' ? Number(item.id || item.course_id) : Number(item);
+          }).filter(Boolean);
         }
         
-        // Robust mapping for Torn API v2 'current' course object
-        if (payload.current && (payload.current.course_id || payload.current.name)) {
-          // Handle dynamic key names in API v2
-          const secondsRemaining = payload.current.seconds_remaining ?? payload.current.seconds_left ?? 0;
-          const totalSeconds = payload.current.total_seconds ?? (secondsRemaining + 1000); // safety fallback
+        // 2. Map Active Course
+        if (payload.education && payload.education.current && (payload.education.current.course_id || payload.education.current.name)) {
+          const current = payload.education.current;
+          const secondsRemaining = current.seconds_remaining ?? current.seconds_left ?? 0;
+          const totalSeconds = current.total_seconds ?? (secondsRemaining + 1000);
 
           state.activeCourse = {
-            id: Number(payload.current.course_id || 0),
-            name: payload.current.name || "Active Education Course",
-            department: payload.current.department || "Academics",
+            id: Number(current.course_id || 0),
+            name: current.name || "Active Education Course",
+            department: current.department || "Academics",
             timeLeft: Number(secondsRemaining),
             totalDuration: Number(totalSeconds)
           };
@@ -442,8 +447,8 @@
           state.activeCourse = null;
         }
 
-        // Dynamically locate the user's name across potential structural v2 variations
-        const playerName = payload.username || payload.name || "Torn Citizen";
+        // 3. Securely pull player name from the parsed profile block
+        const playerName = payload.profile?.name || payload.profile?.username || "Torn Citizen";
 
         // Update the DOM
         statusDot.className = "w-2 h-2 rounded-full bg-green-500";
@@ -451,7 +456,7 @@
         
         // Update welcome card text
         document.getElementById('profileName').innerText = playerName;
-        document.querySelector('#tab-dashboard p').innerText = "Sync Connected. Real-time API data active.";
+        document.getElementById('profileSubtext').innerText = "Sync Connected. Real-time API data active.";
 
         renderApp();
       } catch (err) {
