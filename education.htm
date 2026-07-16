@@ -431,19 +431,44 @@
         }
         
         // 2. Map Active Course
-        if (payload.education && payload.education.current && (payload.education.current.course_id || payload.education.current.name)) {
-          const current = payload.education.current;
-          const secondsRemaining = current.seconds_remaining ?? current.seconds_left ?? 0;
-          const totalSeconds = current.total_seconds ?? (secondsRemaining + 1000);
+        //if (payload.education && payload.education.current && (payload.education.current.course_id || payload.education.current.name)) {
+        //  const current = payload.education.current;
+        //  const secondsRemaining = current.seconds_remaining ?? current.seconds_left ?? 0;
+        //  const totalSeconds = current.total_seconds ?? (secondsRemaining + 1000);
+
+        //  state.activeCourse = {
+        //    id: Number(current.course_id || 0),
+        //    name: current.name || "Active Education Course",
+        //    department: current.department || "Academics",
+        //    timeLeft: Number(secondsRemaining),
+        //    totalDuration: Number(totalSeconds)
+        //  };
+        //} else {
+        //  state.activeCourse = null;
+        //}
+        // 2. Map Active Course (Highly defensive v2 parsing)
+        const current = payload.education?.current;
+        
+        // Check if "current" exists and is not empty/null
+        if (current && Object.keys(current).length > 0) {
+          // Fallbacks for variable names (id vs course_id, name vs course_name)
+          const courseId = current.course_id || current.id || 0;
+          const courseName = current.name || current.course_name || "Active Education Course";
+          const department = current.department || "Academics";
+          
+          // Fallbacks for remaining time fields
+          const secondsRemaining = current.seconds_remaining ?? current.seconds_left ?? current.time_remaining ?? 0;
+          const totalSeconds = current.total_seconds ?? current.duration ?? (Number(secondsRemaining) + 1000);
 
           state.activeCourse = {
-            id: Number(current.course_id || 0),
-            name: current.name || "Active Education Course",
-            department: current.department || "Academics",
+            id: Number(courseId),
+            name: courseName,
+            department: department,
             timeLeft: Number(secondsRemaining),
             totalDuration: Number(totalSeconds)
           };
         } else {
+          // If "current" is null, empty, or not returned (e.g. key permission issues)
           state.activeCourse = null;
         }
 
