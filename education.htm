@@ -3,455 +3,344 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Torn Education Navigator</title>
-  <!-- Tailwind CSS CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- FontAwesome for Icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            darkbg: '#111215',
-            darkcard: '#1a1c23',
-            tornGreen: '#3b82f6',
-            tornAccent: '#e2ba43',
-          }
-        }
-      }
-    }
-  </script>
+  <title>Torn Education Tracker</title>
   <style>
-    /* Custom scrollbars */
-    ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-track { background: #111215; }
-    ::-webkit-scrollbar-thumb { background: #2a2d37; border-radius: 3px; }
-    .neon-glow {
-      box-shadow: 0 0 15px rgba(59, 130, 246, 0.2);
+    :root {
+      --bg-primary: #1a1a1a;
+      --bg-secondary: #242424;
+      --border-color: #333;
+      --text-main: #f0f0f0;
+      --text-muted: #aaa;
+      --accent: #2c1a06; /* Custom dark brown brand background */
+      --accent-light: #442a0b;
+      --green: #4caf50;
+      --blue: #2196f3;
+      --danger: #f44336;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg-primary);
+      color: var(--text-main);
+      padding: 20px;
+      line-height: 1.5;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    header {
+      background-color: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    .header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-pill {
+      background-color: var(--accent);
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      border: 1px solid var(--accent-light);
+    }
+
+    .api-control {
+      display: flex;
+      gap: 10px;
+      flex-grow: 1;
+      max-width: 500px;
+    }
+
+    input[type="password"] {
+      background-color: var(--bg-primary);
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      padding: 8px 12px;
+      border-radius: 4px;
+      flex-grow: 1;
+      font-family: monospace;
+    }
+
+    button {
+      background-color: var(--accent-light);
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background 0.2s;
+    }
+
+    button:hover {
+      background-color: var(--accent);
+    }
+
+    .profile-banner {
+      margin-top: 15px;
+      padding-top: 15px;
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.9rem;
+    }
+
+    .card {
+      background-color: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    .card h2 {
+      font-size: 1.2rem;
+      margin-bottom: 15px;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 8px;
+    }
+
+    .status-active {
+      border-left: 4px solid var(--green);
+    }
+
+    .status-inactive {
+      border-left: 4px solid var(--danger);
+    }
+
+    .course-title {
+      font-size: 1.3rem;
+      font-weight: bold;
+      color: var(--text-main);
+      margin-bottom: 5px;
+    }
+
+    .course-meta {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 15px;
+    }
+
+    .progress-bar-container {
+      background-color: var(--bg-primary);
+      border: 1px solid var(--border-color);
+      height: 20px;
+      border-radius: 10px;
+      overflow: hidden;
+      margin-bottom: 10px;
+      position: relative;
+    }
+
+    .progress-bar {
+      background-color: var(--green);
+      height: 100%;
+      width: 0%;
+      transition: width 0.5s ease;
+    }
+
+    .progress-text {
+      position: absolute;
+      width: 100%;
+      text-align: center;
+      top: 0;
+      left: 0;
+      font-size: 0.8rem;
+      line-height: 20px;
+      font-weight: bold;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 30px;
+      color: var(--text-muted);
+      font-style: italic;
+    }
+
+    .history-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 15px;
+    }
+
+    .history-item {
+      background-color: var(--bg-primary);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .history-item-title {
+      font-weight: bold;
+      font-size: 0.9rem;
+      margin-bottom: 5px;
+    }
+
+    .history-item-dept {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+
+    .badge-completed {
+      align-self: flex-start;
+      margin-top: 8px;
+      background-color: rgba(76, 175, 80, 0.15);
+      color: var(--green);
+      border: 1px solid var(--green);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 0.7rem;
+      font-weight: bold;
+    }
+
+    .error-toast {
+      background-color: var(--danger);
+      color: #fff;
+      padding: 12px;
+      border-radius: 6px;
+      margin-bottom: 20px;
+      display: none;
     }
   </style>
 </head>
-<body class="bg-darkbg text-gray-100 font-sans min-h-screen flex flex-col pb-16">
+<body>
 
-  <!-- TOP BAR -->
-  <header class="bg-darkcard border-b border-gray-800 px-4 py-3 sticky top-0 z-50 flex items-center justify-between">
-    <div class="flex items-center gap-2">
-      <i class="fa-solid fa-graduation-cap text-blue-500 text-xl"></i>
-      <h1 class="text-lg font-bold tracking-wider uppercase text-gray-200">Torn Ed <span class="text-blue-500">Navigator</span></h1>
+  <div class="container">
+    <div id="error-box" class="error-toast"></div>
+
+    <header>
+      <div class="header-row">
+        <h1>
+          Torn Education Tracker 
+          <span class="brand-pill">V2 Sync</span>
+        </h1>
+        <div class="api-control">
+          <input type="password" id="api-key" placeholder="Enter Torn API Key" />
+          <button id="sync-btn" onclick="fetchLiveData()">Sync With API</button>
+        </div>
+      </div>
+      <div class="profile-banner">
+        <span>User: <strong id="user-name">Not Synced</strong></span>
+        <span>ID: <strong id="user-id">-</strong></span>
+        <span>Status: <strong id="sync-status" style="color: var(--danger)">Offline</strong></span>
+      </div>
+    </header>
+
+    <!-- Active Course Card -->
+    <div class="card id-active-card status-inactive" id="active-course-card">
+      <h2>Active Class</h2>
+      <div id="active-course-content">
+        <div class="empty-state">No Active Enrollment Found. Load your API key above to sync.</div>
+      </div>
     </div>
-    <div id="syncStatus" class="text-xs bg-gray-800 px-2 py-1 rounded-full text-gray-400 flex items-center gap-1.5">
-      <span class="w-2 h-2 rounded-full bg-red-500" id="statusDot"></span>
-      <span id="statusText">Offline Mode</span>
+
+    <!-- Completed Courses Card -->
+    <div class="card">
+      <h2>Completed Courses</h2>
+      <div id="history-content">
+        <div class="empty-state">No history recorded yet.</div>
+      </div>
     </div>
-  </header>
+  </div>
 
-  <!-- MAIN APP CONTAINER -->
-  <main class="flex-1 p-4 max-w-md mx-auto w-full">
-
-    <!-- TAB 1: DASHBOARD (Active View by Default) -->
-    <section id="tab-dashboard" class="space-y-4">
-      <!-- Welcome Card -->
-      <div class="bg-darkcard p-4 rounded-xl border border-gray-800 shadow-lg relative overflow-hidden">
-        <div class="absolute -right-6 -bottom-6 opacity-5 text-gray-100">
-          <i class="fa-solid fa-graduation-cap text-9xl"></i>
-        </div>
-        <h2 class="text-sm uppercase tracking-widest text-gray-400 font-semibold">Player Education</h2>
-        <div class="text-2xl font-black mt-1" id="profileName">Guest Student</div>
-        <p class="text-xs text-gray-400 mt-1" id="profileSubtext">Simulated Progress. Link API key to show live data.</p>
-      </div>
-
-      <!-- Active Course Tracker -->
-      <div class="bg-darkcard p-4 rounded-xl border border-gray-800 shadow-lg">
-        <div class="flex justify-between items-start mb-2">
-          <h3 class="text-xs font-bold uppercase text-blue-400 tracking-wider">Currently Enrolled</h3>
-          <span class="text-xs font-mono px-2 py-0.5 rounded bg-blue-950 text-blue-400 border border-blue-900" id="timeRemaining">--:--:--</span>
-        </div>
-        <div class="font-bold text-base" id="activeCourseTitle">No Active Course</div>
-        <div class="text-xs text-gray-400 mb-3" id="activeCourseDesc">Browse the Courses tab to select a course.</div>
-        
-        <!-- Progress Bar -->
-        <div class="w-full bg-gray-900 rounded-full h-2.5 overflow-hidden border border-gray-800">
-          <div id="activeProgressBar" class="bg-blue-500 h-full transition-all duration-1000" style="width: 0%"></div>
-        </div>
-      </div>
-
-      <!-- Overall Completion Stats -->
-      <div class="grid grid-cols-2 gap-4">
-        <div class="bg-darkcard p-3 rounded-xl border border-gray-800 text-center">
-          <div class="text-xs text-gray-400 uppercase font-semibold">Completed Courses</div>
-          <div class="text-2xl font-black text-blue-400 mt-1" id="completedCount">2</div>
-        </div>
-        <div class="bg-darkcard p-3 rounded-xl border border-gray-800 text-center">
-          <div class="text-xs text-gray-400 uppercase font-semibold">Active Perks</div>
-          <div class="text-2xl font-black text-amber-500 mt-1" id="perksCount">1</div>
-        </div>
-      </div>
-
-      <!-- Active Perks List -->
-      <div class="bg-darkcard p-4 rounded-xl border border-gray-800 shadow-lg">
-        <h3 class="text-xs font-bold uppercase text-gray-400 tracking-wider mb-3">My Unlocked Passive Benefits</h3>
-        <div class="space-y-2 text-sm" id="activePerksList">
-          <!-- Populated by JS -->
-        </div>
-      </div>
-    </section>
-
-    <!-- TAB 2: COURSE BROWSER -->
-    <section id="tab-courses" class="space-y-4 hidden">
-      <!-- Search & Filters -->
-      <div class="flex gap-2 bg-darkcard p-2 rounded-lg border border-gray-800">
-        <div class="relative flex-1">
-          <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-gray-500 text-sm"></i>
-          <input type="text" id="courseSearch" placeholder="Search perks (e.g., travel, blood)..." class="w-full bg-gray-900 text-sm pl-9 pr-3 py-2 rounded border border-gray-800 focus:outline-none focus:border-blue-500 text-gray-200">
-        </div>
-      </div>
-
-      <!-- Departments Accordion List -->
-      <div class="space-y-2" id="departmentsList">
-        <!-- Generated by JS -->
-      </div>
-    </section>
-
-    <!-- TAB 3: API SETUP -->
-    <section id="tab-api" class="space-y-4 hidden">
-      <div class="bg-darkcard p-4 rounded-xl border border-gray-800 shadow-lg">
-        <h3 class="text-sm font-bold uppercase text-gray-300 tracking-wider mb-2">API Configuration</h3>
-        <p class="text-xs text-gray-400 mb-4">Provide your 16-character Torn API key to query your live progress on load or on demand. The key is processed strictly client-side.</p>
-        
-        <div class="space-y-3">
-          <div>
-            <label class="text-xs text-gray-400 block mb-1">API Key</label>
-            <input type="password" id="apiKeyInput" placeholder="Enter API Key" class="w-full bg-gray-900 text-sm px-3 py-2 rounded border border-gray-800 text-gray-200 font-mono focus:outline-none focus:border-blue-500">
-          </div>
-          <button onclick="fetchLiveData()" class="w-full bg-blue-600 hover:bg-blue-700 active:bg-blue-800 transition py-2 px-4 rounded text-sm font-semibold flex items-center justify-center gap-2">
-            <i class="fa-solid fa-rotate"></i> Sync With Torn API
-          </button>
-        </div>
-      </div>
-
-      <!-- URL Generation Info Card -->
-      <div class="bg-darkcard p-4 rounded-xl border border-gray-800 shadow-lg">
-        <h3 class="text-xs font-bold uppercase text-amber-500 tracking-wider mb-2">Auto-Load via URL</h3>
-        <p class="text-xs text-gray-400 mb-3">You can bookmark a link with your API key appended as a query parameter to automatically authenticate on launch without pasting your key again:</p>
-        <div class="bg-gray-900 p-2.5 rounded text-xs font-mono select-all break-all border border-gray-800 text-blue-400" id="urlGeneratorDisplay">
-          ...
-        </div>
-      </div>
-    </section>
-
-  </main>
-
-  <!-- BOTTOM MOBILE NAVIGATION BAR -->
-  <nav class="fixed bottom-0 left-0 right-0 bg-darkcard border-t border-gray-800 py-2 flex justify-around items-center z-50">
-    <button onclick="switchTab('dashboard')" id="btn-dashboard" class="flex flex-col items-center text-blue-500 transition">
-      <i class="fa-solid fa-house text-lg"></i>
-      <span class="text-[10px] mt-1 font-semibold">Dashboard</span>
-    </button>
-    <button onclick="switchTab('courses')" id="btn-courses" class="flex flex-col items-center text-gray-400 transition">
-      <i class="fa-solid fa-book text-lg"></i>
-      <span class="text-[10px] mt-1 font-semibold">Browse Ed</span>
-    </button>
-    <button onclick="switchTab('api')" id="btn-api" class="flex flex-col items-center text-gray-400 transition">
-      <i class="fa-solid fa-key text-lg"></i>
-      <span class="text-[10px] mt-1 font-semibold">API Link</span>
-    </button>
-  </nav>
-
-<script>
-    // --- DATABASE: REAL TORN EDUCATION DATA ---
-    const educationDatabase = {
-      biology: {
-        name: "Biology",
-        icon: "fa-dna",
-        courses: [
-          { id: 1, name: "Introduction to Biology", desc: "Gain 10% medical item effectiveness.", perk: "Medical item effectiveness +10%" },
-          { id: 2, name: "Intravenous Therapy", desc: "Allows drawing and using blood bags.", perk: "Unlock Blood Bags" },
-          { id: 3, name: "Anatomy", desc: "Increases critical hit damage by 5%.", perk: "Critical hit damage +5%" }
-        ]
-      },
-      history: {
-        name: "History",
-        icon: "fa-landmark",
-        courses: [
-          { id: 10, name: "History of Archaeology", desc: "Allows you to search the museum.", perk: "Unlock Museum" },
-          { id: 11, name: "Local History", desc: "Increases item travel limit by 2.", perk: "Travel capacity +2 items" },
-          { id: 12, name: "Bachelor of History", desc: "Enables Museum trade for Points.", perk: "Museum points trade unlocked" }
-        ]
-      },
-      sports_science: {
-        name: "Sports Science",
-        icon: "fa-dumbbell",
-        courses: [
-          { id: 20, name: "Introduction to Kinesiology", desc: "Gain a passive 1% bonus to gym Strength gains.", perk: "Passive Strength gym gains +1%" },
-          { id: 21, name: "Muscle Physiology", desc: "Gain a passive 1% bonus to gym Defense gains.", perk: "Passive Defense gym gains +1%" }
-        ]
-      },
-      computer_science: {
-        name: "Computer Science",
-        icon: "fa-laptop-code",
-        courses: [
-          { id: 30, name: "Introduction to Programming", desc: "Allows basic scripting/crimes.", perk: "Unlock Basic Hacking" },
-          { id: 31, name: "Network Security", desc: "Unlock basic cryptographic viruses.", perk: "Unlock Advanced virus coding" }
-        ]
-      }
+  <script>
+    // App State
+    const state = {
+      username: null,
+      playerId: null,
+      activeCourse: null,
+      completedCourses: []
     };
 
-    // --- APPLICATION STATE ---
-    let state = {
-      apiKey: '',
-      activeCourse: {
-        id: 2,
-        name: "Intravenous Therapy",
-        department: "biology",
-        timeLeft: 48500, // 13h 28m
-        totalDuration: 100000
-      },
-      completedCourses: [1, 10], // Pre-populate some completed items
-      isLive: false
-    };
-
-    // --- MAIN INITIALIZATION ON RUN ---
-    window.addEventListener('DOMContentLoaded', () => {
-      // 1. Scan URL for API key
-      const params = new URLSearchParams(window.location.search);
-      const urlKey = params.get('key');
+    // Helper to format remaining time
+    function formatTimeRemaining(seconds) {
+      if (seconds <= 0) return "Completed!";
+      const days = Math.floor(seconds / 86400);
+      const hours = Math.floor((seconds % 86400) / 3600);
+      const minutes = Math.floor((seconds % 3600) / 60);
       
-      if (urlKey && urlKey.length === 16) {
-        state.apiKey = urlKey;
-        document.getElementById('apiKeyInput').value = urlKey;
-        fetchLiveData();
-      }
-
-      // Populate current URL placeholder for user
-      const cleanUrl = window.location.href.split('?')[0];
-      document.getElementById('urlGeneratorDisplay').innerText = `${cleanUrl}?key=YOUR_API_KEY`;
-
-      // Render the application views
-      renderApp();
-      startTimer();
-    });
-
-    // --- RENDER FUNCTIONS ---
-    function renderApp() {
-      renderActiveCourse();
-      renderActivePerks();
-      renderCourseBrowser();
+      let timeString = "";
+      if (days > 0) timeString += `${days}d `;
+      if (hours > 0 || days > 0) timeString += `${hours}h `;
+      timeString += `${minutes}m`;
+      return timeString;
     }
 
-    function renderActiveCourse() {
-      const activeText = document.getElementById('activeCourseTitle');
-      const activeDesc = document.getElementById('activeCourseDesc');
-      const progBar = document.getElementById('activeProgressBar');
-
-      if (state.activeCourse && state.activeCourse.name) {
-        activeText.innerText = state.activeCourse.name;
-        
-        const deptDisplay = state.activeCourse.department 
-          ? state.activeCourse.department.replace('_', ' ').toUpperCase() 
-          : "ACADEMICS";
-        activeDesc.innerText = `Active Course in Department of ${deptDisplay}`;
-        
-        const pct = ((state.activeCourse.totalDuration - state.activeCourse.timeLeft) / state.activeCourse.totalDuration) * 100;
-        progBar.style.width = `${Math.max(0, Math.min(100, pct))}%`;
-      } else {
-        activeText.innerText = "No Active Enrollment";
-        activeDesc.innerText = "No classes currently scheduled.";
-        progBar.style.width = "0%";
-        document.getElementById('timeRemaining').innerText = "--:--:--";
-      }
-    }
-
-    function renderActivePerks() {
-      const perksContainer = document.getElementById('activePerksList');
-      const completedCountEl = document.getElementById('completedCount');
-      const perksCountEl = document.getElementById('perksCount');
-
-      perksContainer.innerHTML = '';
-      completedCountEl.innerText = state.completedCourses.length;
-
-      let activePerks = [];
-
-      // Loop through global DB to discover benefits matching user state
-      Object.keys(educationDatabase).forEach(deptKey => {
-        educationDatabase[deptKey].courses.forEach(course => {
-          if (state.completedCourses.includes(course.id)) {
-            activePerks.push({
-              perk: course.perk,
-              courseName: course.name
-            });
-          }
-        });
-      });
-
-      perksCountEl.innerText = activePerks.length;
-
-      if (activePerks.length === 0) {
-        perksContainer.innerHTML = `<div class="text-xs text-gray-500 italic">No benefits unlocked yet. Complete courses in the 'Browse' tab to unlock passive perks!</div>`;
-      } else {
-        activePerks.forEach(item => {
-          const row = document.createElement('div');
-          row.className = "flex items-start gap-2 py-1.5 border-b border-gray-800 last:border-0";
-          row.innerHTML = `
-            <i class="fa-solid fa-circle-check text-green-500 mt-1 text-xs"></i>
-            <div>
-              <span class="font-semibold text-gray-200">${item.perk}</span>
-              <span class="text-[10px] text-gray-500 block">Unlocked from: ${item.courseName}</span>
-            </div>
-          `;
-          perksContainer.appendChild(row);
-        });
-      }
-    }
-
-    function renderCourseBrowser() {
-      const container = document.getElementById('departmentsList');
-      container.innerHTML = '';
-
-      Object.keys(educationDatabase).forEach(deptKey => {
-        const dept = educationDatabase[deptKey];
-        const deptBlock = document.createElement('div');
-        deptBlock.className = "bg-darkcard rounded-lg border border-gray-800 overflow-hidden";
-        
-        let coursesHtml = '';
-        dept.courses.forEach(course => {
-          const isCompleted = state.completedCourses.includes(course.id);
-          const statusIcon = isCompleted 
-            ? `<i class="fa-solid fa-circle-check text-green-500 text-lg"></i>` 
-            : `<button onclick="toggleCourseSim(${course.id})" class="text-xs bg-gray-800 hover:bg-blue-900 border border-gray-700 hover:border-blue-700 px-2.5 py-1 rounded transition text-gray-300">Toggle</button>`;
-
-          coursesHtml += `
-            <div class="p-3 border-t border-gray-800 flex justify-between items-center gap-4 bg-gray-950/40">
-              <div class="space-y-0.5">
-                <div class="text-sm font-semibold text-gray-200">${course.name}</div>
-                <div class="text-xs text-gray-400">${course.desc}</div>
-                <div class="text-[10px] text-amber-500 font-mono">Perk: ${course.perk}</div>
-              </div>
-              <div>${statusIcon}</div>
-            </div>
-          `;
-        });
-
-        deptBlock.innerHTML = `
-          <div class="flex justify-between items-center px-4 py-3 bg-gray-900/60 cursor-pointer" onclick="this.nextElementSibling.classList.toggle('hidden')">
-            <div class="flex items-center gap-3">
-              <div class="w-8 h-8 rounded-lg bg-gray-800 flex items-center justify-center text-blue-400">
-                <i class="fa-solid ${dept.icon}"></i>
-              </div>
-              <div class="font-bold text-sm tracking-wider uppercase text-gray-300">${dept.name}</div>
-            </div>
-            <i class="fa-solid fa-chevron-down text-gray-500"></i>
-          </div>
-          <div class="dept-courses-container">
-            ${coursesHtml}
-          </div>
-        `;
-        container.appendChild(deptBlock);
-      });
-    }
-
-    // --- TIMERS & WORKERS ---
-    function startTimer() {
-      setInterval(() => {
-        if (state.activeCourse && state.activeCourse.timeLeft > 0) {
-          state.activeCourse.timeLeft--;
-          const duration = state.activeCourse.timeLeft;
-          
-          const hrs = Math.floor(duration / 3600);
-          const mins = Math.floor((duration % 3600) / 60);
-          const secs = duration % 60;
-          
-          document.getElementById('timeRemaining').innerText = 
-            `${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
-          
-          const pct = ((state.activeCourse.totalDuration - state.activeCourse.timeLeft) / state.activeCourse.totalDuration) * 100;
-          document.getElementById('activeProgressBar').style.width = `${Math.max(0, Math.min(100, pct))}%`;
-        }
-      }, 1000);
-    }
-
-    // --- INTERACTIVE SIMULATION LOGIC ---
-    function toggleCourseSim(courseId) {
-      const index = state.completedCourses.indexOf(courseId);
-      if (index > -1) {
-        state.completedCourses.splice(index, 1);
-      } else {
-        state.completedCourses.push(courseId);
-      }
-      renderApp();
-    }
-
-    // --- NAVIGATION TAB SWITCHING ---
-    function switchTab(tabId) {
-      ['dashboard', 'courses', 'api'].forEach(t => {
-        document.getElementById(`tab-${t}`).classList.add('hidden');
-        document.getElementById(`btn-${t}`).className = "flex flex-col items-center text-gray-400 transition";
-      });
-      document.getElementById(`tab-${tabId}`).classList.remove('hidden');
-      document.getElementById(`btn-${tabId}`).className = "flex flex-col items-center text-blue-500 transition";
-    }
-
-    // --- TORN API CORE FETCH INTEGRATION ---
+    // Main fetch routine
     async function fetchLiveData() {
-      const apiKeyInput = document.getElementById('apiKeyInput').value.trim();
-      
-      if (apiKeyInput.length !== 16) {
-        alert("Please enter a well-formed 16-character Torn API key.");
+      const apiKey = document.getElementById("api-key").value.trim();
+      const errorBox = document.getElementById("error-box");
+      const syncBtn = document.getElementById("sync-btn");
+
+      // Reset errors
+      errorBox.style.display = "none";
+      errorBox.innerText = "";
+
+      if (!apiKey) {
+        errorBox.innerText = "Please enter an API Key.";
+        errorBox.style.display = "block";
         return;
       }
 
-      const statusDot = document.getElementById('statusDot');
-      const statusText = document.getElementById('statusText');
-      statusDot.className = "w-2 h-2 rounded-full bg-yellow-500 animate-pulse";
-      statusText.innerText = "Syncing...";
+      syncBtn.innerText = "Syncing...";
+      syncBtn.disabled = true;
 
       try {
-        // Query both 'profile' and 'education' selections in a single call to get player name + education status
-        const response = await fetch(`https://api.torn.com/v2/user/profile,education?key=${apiKeyInput}`);
-
+        // --- KEY CONFIGURATION CHANGE BELOW ---
+        // Requesting 'profile' AND 'education' selections explicitly
+        const url = `https://api.torn.com/user/?selections=profile,education&key=${apiKey}`;
+        
+        const response = await fetch(url);
         if (!response.ok) {
-          throw new Error(`HTTP network failure: Status code ${response.status}`);
+          throw new Error(`Torn API HTTP error: Status ${response.status}`);
         }
 
         const payload = await response.json();
+        console.log("Torn API Response:", payload);
 
         if (payload.error) {
           throw new Error(payload.error.error || "Torn API returned an error response block.");
         }
 
-        state.apiKey = apiKeyInput;
-        state.isLive = true;
-        
-        // 1. Parse Completed Courses safely under V2 structure
-        if (payload.education && payload.education.completed) {
-          state.completedCourses = payload.education.completed.map(item => {
-            // Handle both flat IDs and object-based IDs
-            return typeof item === 'object' ? Number(item.id || item.course_id) : Number(item);
-          }).filter(Boolean);
-        }
-        
-        // 2. Map Active Course
-        //if (payload.education && payload.education.current && (payload.education.current.course_id || payload.education.current.name)) {
-        //  const current = payload.education.current;
-        //  const secondsRemaining = current.seconds_remaining ?? current.seconds_left ?? 0;
-        //  const totalSeconds = current.total_seconds ?? (secondsRemaining + 1000);
+        // 1. Map Profile Stats
+        state.username = payload.name || "Unknown";
+        state.playerId = payload.player_id || "N/A";
 
-        //  state.activeCourse = {
-        //    id: Number(current.course_id || 0),
-        //    name: current.name || "Active Education Course",
-        //    department: current.department || "Academics",
-        //    timeLeft: Number(secondsRemaining),
-        //    totalDuration: Number(totalSeconds)
-        //  };
-        //} else {
-        //  state.activeCourse = null;
-        //}
         // 2. Map Active Course (Highly defensive v2 parsing)
         const current = payload.education?.current;
         
         // Check if "current" exists and is not empty/null
         if (current && Object.keys(current).length > 0) {
-          // Fallbacks for variable names (id vs course_id, name vs course_name)
+          // Fallbacks for key name variables (id vs course_id, name vs course_name)
           const courseId = current.course_id || current.id || 0;
           const courseName = current.name || current.course_name || "Active Education Course";
           const department = current.department || "Academics";
@@ -468,26 +357,100 @@
             totalDuration: Number(totalSeconds)
           };
         } else {
-          // If "current" is null, empty, or not returned (e.g. key permission issues)
           state.activeCourse = null;
         }
 
-        // 3. Securely pull player name from the parsed profile block
-        const playerName = payload.profile?.name || payload.profile?.username || "Torn Citizen";
-
-        // Update the DOM
-        statusDot.className = "w-2 h-2 rounded-full bg-green-500";
-        statusText.innerText = "Sync Connected";
+        // 3. Map Completed Courses
+        const completedData = payload.education?.completed || payload.education?.education_completed || {};
+        state.completedCourses = [];
         
-        // Update welcome card text
-        document.getElementById('profileName').innerText = playerName;
-        document.getElementById('profileSubtext').innerText = "Sync Connected. Real-time API data active.";
+        // Check if completedData is an array or object of keys
+        if (completedData) {
+          if (Array.isArray(completedData)) {
+            state.completedCourses = completedData.map(id => ({ id: Number(id), name: `Course ID: ${id}` }));
+          } else {
+            // If it is an object key-mapped { 12: "Computer Science Intro", 15: "Network Security" }
+            Object.entries(completedData).forEach(([key, val]) => {
+              state.completedCourses.push({
+                id: Number(key),
+                name: typeof val === "string" ? val : `Course ID: ${key}`
+              });
+            });
+          }
+        }
 
-        renderApp();
+        // Update UI
+        updateUI();
+
       } catch (err) {
-        statusDot.className = "w-2 h-2 rounded-full bg-red-500";
-        statusText.innerText = "Sync Failed";
-        alert(`Authentication Error: ${err.message}`);
+        console.error(err);
+        errorBox.innerText = `Error: ${err.message}`;
+        errorBox.style.display = "block";
+      } finally {
+        syncBtn.innerText = "Sync With API";
+        syncBtn.disabled = false;
+      }
+    }
+
+    // UI Rendering Engine
+    function updateUI() {
+      // Header Info
+      document.getElementById("user-name").innerText = state.username || "Not Synced";
+      document.getElementById("user-id").innerText = state.playerId || "-";
+      
+      const syncStatus = document.getElementById("sync-status");
+      syncStatus.innerText = "Live / Synced";
+      syncStatus.style.color = "var(--green)";
+
+      // Render Active Class Card
+      const activeCard = document.getElementById("active-course-card");
+      const activeContent = document.getElementById("active-course-content");
+
+      if (state.activeCourse) {
+        activeCard.className = "card id-active-card status-active";
+        
+        const rawProgress = 100 - ((state.activeCourse.timeLeft / state.activeCourse.totalDuration) * 100);
+        const progressPercentage = Math.max(0, Math.min(100, Math.round(rawProgress || 0)));
+
+        activeContent.innerHTML = `
+          <div class="course-title">${state.activeCourse.name}</div>
+          <div class="course-meta">Department: ${state.activeCourse.department} | Course ID: ${state.activeCourse.id}</div>
+          <div class="progress-bar-container">
+            <div class="progress-bar" style="width: ${progressPercentage}%"></div>
+            <div class="progress-text">${progressPercentage}% Complete</div>
+          </div>
+          <div style="font-size: 0.9rem; text-align: right; color: var(--text-muted)">
+            Time Remaining: <strong>${formatTimeRemaining(state.activeCourse.timeLeft)}</strong>
+          </div>
+        `;
+      } else {
+        activeCard.className = "card id-active-card status-inactive";
+        activeContent.innerHTML = `
+          <div class="empty-state">You are not currently enrolled in any education courses. Go register at the City College!</div>
+        `;
+      }
+
+      // Render Completed History Card
+      const historyContent = document.getElementById("history-content");
+      if (state.completedCourses.length > 0) {
+        let historyHTML = `<div class="history-list">`;
+        state.completedCourses.forEach(course => {
+          historyHTML += `
+            <div class="history-item">
+              <div>
+                <div class="history-item-dept">Completed</div>
+                <div class="history-item-title">${course.name}</div>
+              </div>
+              <span class="badge-completed">Passed</span>
+            </div>
+          `;
+        });
+        historyHTML += `</div>`;
+        historyContent.innerHTML = historyHTML;
+      } else {
+        historyContent.innerHTML = `
+          <div class="empty-state">No completed courses returned. If you have completed courses, ensure you are using at least a Limited Access API key.</div>
+        `;
       }
     }
   </script>
